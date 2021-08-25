@@ -4,10 +4,8 @@
 
 class Phrase {
   constructor(phrase) {
-    this.phrase = this.phrase;
+    this.phrase = phrase;
   }
-
-  phrase = game.getRandomPhrase();
 
   /**
    * Display phrase on game board
@@ -15,8 +13,7 @@ class Phrase {
 
   addPhraseToDisplay() {
     const phraseSection = document.querySelector("#phrase");
-    let html = `<div id="phrase" class="section">
-      <ul>`;
+    let html = `<ul>`;
     for (let i = 0; i < this.phrase.length; i++) {
       if (this.phrase[i] !== " ") {
         html += ` <li class="hide letter ${this.phrase[i]}">${this.phrase[i]}</li>`;
@@ -32,11 +29,29 @@ class Phrase {
    * Checks if passed letter is in phrase
    * @param (string) letter - Letter to check
    */
-  checkLetter() {}
+  checkLetter(letter) {
+    if (this.phrase.includes(letter.textContent)) {
+      this.showMatchedLetter(letter.textContent);
+      letter.classList.add("chosen");
+      //game.checkForWin();
+    } else {
+      letter.classList.add("wrong");
+      game.removeLife();
+    }
+  }
 
   /**
    * Displays passed letter on screen after a match is found
    * @param (string) letter - Letter to display
    */
-  showMatchedLetter() {}
+  showMatchedLetter(letter) {
+    const ul = document.querySelector("#phrase").children[0].children;
+
+    for (let i = 0; i < ul.length; i++) {
+      if (ul[i].textContent === letter) {
+        ul[i].classList.add("show");
+        ul[i].classList.remove("hide");
+      }
+    }
+  }
 }

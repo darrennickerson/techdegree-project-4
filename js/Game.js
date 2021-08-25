@@ -22,7 +22,11 @@ class Game {
       "right off the bat",
       "Bigger Fish to fry",
     ];
-    return phrases;
+    let lowerPhrases = [];
+    phrases.forEach((phrase) => {
+      lowerPhrases.push(phrase.toLowerCase());
+    });
+    return lowerPhrases;
   }
 
   /**
@@ -40,16 +44,31 @@ class Game {
    */
 
   startGame() {
-    const game = new Game();
+    //Reset the Missed letters
+
+    //Reset the chosen letters
+    let qwerty = document.querySelectorAll(".key");
+    qwerty.forEach((key) => {
+      key.classList.remove("chosen");
+      key.classList.remove("wrong");
+      key.disabled = false;
+    });
     const overlay = document.getElementById("overlay");
-    const phrase = new Phrase(randomPhrase.phrase);
+    this.missed = 0;
+
     overlay.style.display = "none";
     this.activePhrase = this.getRandomPhrase();
+    phrase.phrase = this.activePhrase;
     phrase.addPhraseToDisplay();
   }
 
   handleInteration() {
-    const querty = document.getElementById("qwerty");
+    qwerty.addEventListener("click", (e) => {
+      if (e.target.tagName === "BUTTON") {
+        phrase.checkLetter(e.target);
+        e.target.disabled = true;
+      }
+    });
   }
 
   /**
@@ -64,11 +83,29 @@ won
    * Removes a life from the scoreboard
    * Checks if player has remaining lives and ends game if player is out
    */
-  removeLife() {}
+
+  removeLife() {
+    let lastItem = hearts.pop();
+    lastItem.src = "images/lostHeart.png";
+
+    this.missed += 1;
+    if (this.missed >= 5) {
+      this.gameOver();
+    }
+  }
 
   /**
    * Displays game over message
    * @param {boolean} gameWon - Whether or not the user won the game
    */
-  gameOver() {}
+  gameOver() {
+    setTimeout(function () {
+      document.querySelector("#game-over-message").innerHTML =
+        "Better Luck Next Time!";
+
+      overlay.style.display = "block";
+      overlay.classList.remove("start");
+      overlay.classList.add("wrong");
+    }, 1000);
+  }
 }
