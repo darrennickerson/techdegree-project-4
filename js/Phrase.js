@@ -33,7 +33,7 @@ class Phrase {
     if (this.phrase.includes(letter.textContent)) {
       this.showMatchedLetter(letter.textContent);
       letter.classList.add("chosen");
-      //game.checkForWin();
+      game.checkForWin();
     } else {
       letter.classList.add("wrong");
       game.removeLife();

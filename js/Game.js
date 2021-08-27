@@ -44,10 +44,7 @@ class Game {
    */
 
   startGame() {
-    //Reset the Missed letters
-
-    //Reset the chosen letters
-    let qwerty = document.querySelectorAll(".key");
+    const qwerty = document.querySelectorAll(".key");
     qwerty.forEach((key) => {
       key.classList.remove("chosen");
       key.classList.remove("wrong");
@@ -55,14 +52,28 @@ class Game {
     });
     const overlay = document.getElementById("overlay");
     this.missed = 0;
-
+    // add something here to not get the same phrase back to back
     overlay.style.display = "none";
+    this.activePhrase = null;
     this.activePhrase = this.getRandomPhrase();
     phrase.phrase = this.activePhrase;
     phrase.addPhraseToDisplay();
   }
 
+  /*
+   * handles all the button clicks
+   */
+
   handleInteration() {
+    startButton.addEventListener("click", () => {
+      game.startGame();
+
+      //creates a new array for the scoreboard images.
+      for (let i = 0; i < scoreboard.length; i++) {
+        scoreboard[i].lastChild.src = "images/liveHeart.png";
+        hearts.push(scoreboard[i].lastChild);
+      }
+    });
     qwerty.addEventListener("click", (e) => {
       if (e.target.tagName === "BUTTON") {
         phrase.checkLetter(e.target);
@@ -76,7 +87,19 @@ class Game {
 * @return {boolean} True if game has been won, false if game wasn't
 won
 */
-  checkForWin() {}
+
+  checkForWin() {
+    let notFound = 0;
+    const phraseSection = document.querySelector("#phrase");
+    for (let i = 0; i < phraseSection.children[0].children.length; i++) {
+      if (phraseSection.children[0].children[i].classList.contains("hide")) {
+        notFound += 1;
+      }
+    }
+    if (notFound === 0) {
+      this.gameOver(true);
+    }
+  }
 
   /**
    * Increases the value of the missed property
@@ -87,10 +110,9 @@ won
   removeLife() {
     let lastItem = hearts.pop();
     lastItem.src = "images/lostHeart.png";
-
     this.missed += 1;
     if (this.missed >= 5) {
-      this.gameOver();
+      this.gameOver(false);
     }
   }
 
@@ -98,14 +120,36 @@ won
    * Displays game over message
    * @param {boolean} gameWon - Whether or not the user won the game
    */
-  gameOver() {
-    setTimeout(function () {
-      document.querySelector("#game-over-message").innerHTML =
-        "Better Luck Next Time!";
 
+  gameOver(gameWon) {
+    overlay.classList.remove("win");
+    overlay.classList.remove("lose");
+    let message = "";
+    let messageStyle = "";
+    if (gameWon === true) {
+      message = "Congrats you won!";
+      messageStyle = "win";
+    } else {
+      message = "Better luck next time!";
+      messageStyle = "lose";
+    }
+    // delay the overlay .5 seconds
+    setTimeout(function () {
+      document.querySelector("#game-over-message").innerHTML = message;
       overlay.style.display = "block";
-      overlay.classList.remove("start");
-      overlay.classList.add("wrong");
-    }, 1000);
+      overlay.classList.add(messageStyle);
+    }, 500);
+  }
+
+  secondChance() {
+    let awarded = Math.floor(Math.random() * 100);
+    let chances = Math.floor(Math.random() * (4 - 1) + 1);
+    if (awarded > 25) {
+      this.missed = this.missed - chances;
+      setTimeout(function () {
+        overlay.style.display = "none";
+        return this.missed;
+      }, 1000);
+    }
   }
 }
