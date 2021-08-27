@@ -124,14 +124,22 @@ won
   gameOver(gameWon) {
     overlay.classList.remove("win");
     overlay.classList.remove("lose");
+    const secondChanceBtn = document.createElement("button");
+    secondChanceBtn.classList.add("secondChance");
+    secondChanceBtn.textContent = "Second Chance?";
     let message = "";
     let messageStyle = "";
     if (gameWon === true) {
       message = "Congrats you won!";
       messageStyle = "win";
     } else {
+      overlay.insertAdjacentElement("beforeend", secondChanceBtn);
       message = "Better luck next time!";
       messageStyle = "lose";
+      const secondChanceButton = document.querySelector(".secondChance");
+      secondChanceButton.addEventListener("click", () => {
+        this.secondChance();
+      });
     }
     // delay the overlay .5 seconds
     setTimeout(function () {
@@ -144,12 +152,22 @@ won
   secondChance() {
     let awarded = Math.floor(Math.random() * 100);
     let chances = Math.floor(Math.random() * (4 - 1) + 1);
+
     if (awarded > 25) {
       this.missed = this.missed - chances;
-      setTimeout(function () {
+      for (let i = 0; i < chances; i++) {
+        scoreboard[i].lastChild.src = "images/liveHeart.png";
+        hearts.push(scoreboard[i].lastChild);
+      }
+      document.getElementById(
+        "game-over-message"
+      ).textContent = `${chances} more chances click continue or start over.`;
+      document.querySelector(".secondChance").textContent = "Continue";
+      document.querySelector(".secondChance").addEventListener("click", () => {
         overlay.style.display = "none";
-        return this.missed;
-      }, 1000);
+      });
+    } else {
+      //what
     }
   }
 }
