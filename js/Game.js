@@ -7,6 +7,7 @@ class Game {
     this.missed = 0;
     this.phrases = this.createPhrases();
     this.activePhrase = null;
+    this.tries = true;
   }
 
   /**
@@ -44,6 +45,7 @@ class Game {
    */
 
   startGame() {
+    this.tries = true;
     const qwerty = document.querySelectorAll(".key");
     qwerty.forEach((key) => {
       key.classList.remove("chosen");
@@ -58,6 +60,12 @@ class Game {
     this.activePhrase = this.getRandomPhrase();
     phrase.phrase = this.activePhrase;
     phrase.addPhraseToDisplay();
+    if (document.querySelector(".secondChance") !== null) {
+      document.querySelector(".secondChance").remove();
+    }
+    if (document.querySelector(".continue") !== null) {
+      document.querySelector(".continue").remove();
+    }
   }
 
   /*
@@ -78,6 +86,17 @@ class Game {
       if (e.target.tagName === "BUTTON") {
         phrase.checkLetter(e.target);
         e.target.disabled = true;
+      }
+    });
+    document.addEventListener("keyup", (e) => {
+      let letter = e.code[e.code.length - 1].toLowerCase();
+      const keys = document.getElementsByClassName("key");
+      if (/[a-z]/.test(letter)) {
+        for (let i = 0; i < keys.length; i++) {
+          if (keys[i].textContent === letter) letter = keys[i];
+        }
+        phrase.checkLetter(letter);
+        letter.disabled = true;
       }
     });
   }
@@ -113,6 +132,7 @@ won
     this.missed += 1;
     if (this.missed >= 5) {
       this.gameOver(false);
+      hearts = [];
     }
   }
 
@@ -124,22 +144,33 @@ won
   gameOver(gameWon) {
     overlay.classList.remove("win");
     overlay.classList.remove("lose");
-    const secondChanceBtn = document.createElement("button");
-    secondChanceBtn.classList.add("secondChance");
-    secondChanceBtn.textContent = "Second Chance?";
+
     let message = "";
     let messageStyle = "";
     if (gameWon === true) {
       message = "Congrats you won!";
       messageStyle = "win";
     } else {
-      overlay.insertAdjacentElement("beforeend", secondChanceBtn);
       message = "Better luck next time!";
       messageStyle = "lose";
-      const secondChanceButton = document.querySelector(".secondChance");
-      secondChanceButton.addEventListener("click", () => {
-        this.secondChance();
-      });
+      //
+      if (this.tries) {
+        const secondChanceBtn = document.createElement("button");
+        secondChanceBtn.classList.add("secondChance");
+        secondChanceBtn.textContent = "Second Chance?";
+
+        overlay.insertAdjacentElement("beforeend", secondChanceBtn);
+        const continueBtn = document.createElement("button");
+        continueBtn.classList.add("continue");
+        continueBtn.textContent = "Continue?";
+
+        overlay.insertAdjacentElement("beforeend", continueBtn);
+        continueBtn.style.display = "none";
+        const secondChanceButton = document.querySelector(".secondChance");
+        secondChanceButton.addEventListener("click", () => {
+          this.secondChance();
+        });
+      }
     }
     // delay the overlay .5 seconds
     setTimeout(function () {
@@ -149,25 +180,45 @@ won
     }, 500);
   }
 
-  secondChance() {
-    let awarded = Math.floor(Math.random() * 100);
-    let chances = Math.floor(Math.random() * (4 - 1) + 1);
+  /*
+   * Displays a second chance button for more lives and calculates how many chances to receive
+   *
+   */
 
-    if (awarded > 25) {
-      this.missed = this.missed - chances;
-      for (let i = 0; i < chances; i++) {
-        scoreboard[i].lastChild.src = "images/liveHeart.png";
-        hearts.push(scoreboard[i].lastChild);
-      }
+  secondChance() {
+    let awarded = 0;
+    let chances = 0;
+    awarded = Math.floor(Math.random() * 100);
+    chances = Math.floor(Math.random() * (4 - 1) + 1);
+
+    if (awarded > 25 && this.tries) {
+      console.log(chances);
+      console.log(awarded);
+
       document.getElementById(
         "game-over-message"
       ).textContent = `${chances} more chances click continue or start over.`;
-      document.querySelector(".secondChance").textContent = "Continue";
-      document.querySelector(".secondChance").addEventListener("click", () => {
+
+      document.querySelector(".secondChance").remove();
+      document.querySelector(".continue").style.display = "inline";
+
+      document.querySelector(".continue").addEventListener("click", () => {
         overlay.style.display = "none";
+        document.querySelector(".continue").style.display = "none";
+
+        for (let i = 0; i < chances; i++) {
+          scoreboard[i].lastChild.src = "images/liveHeart.png";
+          hearts.push(scoreboard[i].lastChild);
+        }
+        this.missed = this.missed - chances;
       });
     } else {
-      //what
+      document.getElementById(
+        "game-over-message"
+      ).textContent = `Sorry no more chances this time.`;
+      document.querySelector(".secondChance").remove();
+      document.querySelector(".continue").remove();
     }
+    this.tries = false;
   }
 }
